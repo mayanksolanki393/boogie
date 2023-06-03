@@ -728,6 +728,27 @@ namespace Microsoft.Boogie.VCExprAST {
     }
   }
 
+  // Visitor to check if the VCExpr contains any quantifiers.
+  // The version of Z3 we are using is not very stable when it comes
+  // to computing interpolants with quantifiers present in the logical formula.
+  // This visitors check if a quantifier is present in the VCExpr.
+  // If so, we issue a warning that the results cannot be trusted.
+  public class QuantifierCheckVisitor : TraversingVCExprVisitor<bool, bool> {
+
+    private bool hasQuantifier = false;
+    public static bool HasQuantifier(VCExpr expr) {
+      Contract.Requires(expr != null);
+      QuantifierCheckVisitor/*!*/ visitor = new QuantifierCheckVisitor();
+      visitor.Traverse(expr, true);
+      return visitor.hasQuantifier;
+    }
+
+    protected override bool StandardResult(VCExpr node, bool arg) {
+      hasQuantifier = hasQuantifier || node is VCExprQuantifier;
+      return true;
+    }
+  }
+
   ////////////////////////////////////////////////////////////////////////////
 
   // Collect all free term and type variables in a VCExpr. Type variables

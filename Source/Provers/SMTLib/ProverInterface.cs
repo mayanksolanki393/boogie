@@ -2092,7 +2092,7 @@ namespace Microsoft.Boogie.SMTLib
 
 
     // similarly, a list of function/predicate declarations
-    private readonly List<string/*!>!*/> TypeDecls = new List<string/*!*/>();
+    protected readonly List<string/*!>!*/> TypeDecls = new List<string/*!*/>();
 
     protected void AddAxiom(string axiom)
     {
@@ -2738,6 +2738,35 @@ namespace Microsoft.Boogie.SMTLib
                   HandleProverError("Unexpected prover response: got null for interpolant!");
               interpolantList.Add(interpolant);
           }
+      }
+
+      // These methods have been added for enabling sharing 
+      // of VCExpr specially summary computed using interpolation
+      // (as strings) in a distributed setting.
+      public class StringParser : SExpr.Parser {
+          public StringParser(String stringToParse) : base(new System.IO.StreamReader(new System.IO.MemoryStream(Encoding.UTF8.GetBytes(stringToParse ?? "")))) {}
+          public override void ParseError(String msg) {
+            throw new Exception("Parsing Error: " + msg);
+          }
+      }
+
+      public override VCExpr StringToVCExpr(string vcExpr, Dictionary<String, VCExpr> bound = null)
+      {
+          Console.WriteLine("Summary: " + vcExpr);
+          if (bound == null) bound = new Dictionary<String, VCExpr>();
+          StringParser parser = new StringParser(vcExpr);
+          List<SExpr> sexpr = parser.ParseSExprs(true).ToList();
+          Contract.Assert(sexpr.Count == 1);
+          
+          VCExpr parsered = SExprToVCExpr(sexpr[0], bound);
+          
+          return parsered;
+      }
+
+      public override String VCExprToString(VCExpr expr) {
+          string expression = VCExpr2String(expr, 1);
+          TypeDecls.Clear();
+          return expression;
       }
   }
 

@@ -675,6 +675,17 @@ namespace Microsoft.Boogie {
         throw new NotImplementedException();
     }
 
+    // These methods have been added for enabling sharing 
+    // of VCExpr specially summary computed using interpolation
+    // (as strings) in a distributed setting.
+    public virtual VCExpr StringToVCExpr(string expression, Dictionary<String, VCExpr> bound=null) {
+        throw new NotImplementedException();
+    }
+
+    public virtual String VCExprToString(VCExpr expr) {
+        throw new NotImplementedException();
+    }
+
   }
 
   public class ProverInterfaceContracts : ProverInterface {
